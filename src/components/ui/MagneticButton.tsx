@@ -14,8 +14,8 @@ type MagneticButtonProps = {
 };
 
 /**
- * CTA con efecto magnético: el botón sigue ligeramente al cursor usando
- * motion values + springs (no provoca re-renders de React).
+ * CTA con efecto magnético en puntero fino. En touch no aplica springs
+ * (evita transforms raros en iOS); el enlace sigue siendo un <a> normal.
  */
 export function MagneticButton({ href, children, variant = "primary", className, strength = 0.3 }: MagneticButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
@@ -36,6 +36,14 @@ export function MagneticButton({ href, children, variant = "primary", className,
     y.set(0);
   }
 
+  const classes = cn(
+    "group relative inline-flex h-14 items-center gap-3 overflow-hidden rounded-full px-7 text-[15px] font-semibold tracking-tight-brand transition-colors duration-300",
+    variant === "primary"
+      ? "bg-tally text-cream hover:bg-tally-600"
+      : "border border-cream/20 text-cream hover:border-cream/60",
+    className,
+  );
+
   return (
     <motion.a
       ref={ref}
@@ -44,15 +52,8 @@ export function MagneticButton({ href, children, variant = "primary", className,
       onPointerLeave={reset}
       style={{ x: springX, y: springY }}
       whileTap={{ scale: 0.96 }}
-      className={cn(
-        "group relative inline-flex h-14 items-center gap-3 overflow-hidden rounded-full px-7 text-[15px] font-semibold tracking-tight-brand transition-colors duration-300",
-        variant === "primary"
-          ? "bg-tally text-cream hover:bg-tally-600"
-          : "border border-cream/20 text-cream hover:border-cream/60",
-        className,
-      )}
+      className={classes}
     >
-      {/* Relleno que barre de abajo hacia arriba en hover */}
       {variant === "ghost" && (
         <span
           aria-hidden

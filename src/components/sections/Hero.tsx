@@ -5,34 +5,25 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { LogoMark } from "@/components/ui/Logo";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Marquee, OnAirBadge, Timecode } from "@/components/ui/Broadcast";
-import { EASE_OUT_EXPO, fadeIn, fadeUp, maskUp, stagger } from "@/lib/motion";
 import { site } from "@/lib/site";
 
-const HEADLINE: React.ReactNode[] = [
-  "Tu evento,",
-  <>
-    <em className="font-bold italic text-tally">en vivo</em> y
-  </>,
-  "sin fronteras.",
-];
-
+/**
+ * Hero must stay readable without Motion finishing entrance animations.
+ * On iOS Safari, Motion variants with opacity:0 / mask y:110% often never
+ * resolve, which left only the grid background visible. Content uses CSS
+ * enter animations; Motion is limited to decorative parallax.
+ */
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
-
-  // Progreso de 0 → 1 mientras el hero sale de la pantalla
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  // Parallax solo con transform (seguro en Safari). No usar opacity ligada al
-  // scroll: el path nativo ViewTimeline rompe opacity en iOS y deja el hero en blanco.
-  const contentY = useTransform(scrollYProgress, [0, 1], reduceMotion ? ["0%", "0%"] : ["0%", "28%"]);
+  // Solo el logo de fondo hace parallax (transform, no opacity). El copy no se mueve con scroll.
   const markY = useTransform(scrollYProgress, [0, 1], reduceMotion ? ["0%", "0%"] : ["0%", "-30%"]);
   const markRotate = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -10]);
-  const lineReveal = reduceMotion ? fadeIn : maskUp;
 
   return (
     <section ref={ref} id="inicio" className="relative flex min-h-svh flex-col overflow-hidden pt-24">
-      {/* Fondo: retícula + halo rojo + grano */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_70%_60%_at_40%_40%,black,transparent)]" />
       <div aria-hidden className="pointer-events-none absolute -left-40 top-1/3 size-[42rem] rounded-full bg-tally/15 blur-[140px]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grain opacity-[0.07] mix-blend-overlay" />
@@ -40,61 +31,58 @@ export function Hero() {
       <motion.div
         aria-hidden
         style={{ y: markY, rotate: markRotate }}
-        initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: reduceMotion ? 0.4 : 1.6, ease: EASE_OUT_EXPO, delay: reduceMotion ? 0 : 0.3 }}
         className="pointer-events-none absolute -right-[18%] top-[14%] w-[85vw] max-w-[980px] text-cream/[0.035] md:-right-[8%] md:w-[62vw]"
       >
         <LogoMark mono />
       </motion.div>
 
-      <motion.div
-        style={{ y: contentY }}
-        className="container-site relative z-10 flex flex-1 flex-col justify-center py-16"
-      >
-        <motion.div initial="hidden" animate="show" variants={stagger(0.12, 0.1)} className="max-w-6xl">
-          <motion.div variants={fadeUp} className="mb-8 flex flex-wrap items-center gap-3 text-sm text-cream/60">
+      <div className="container-site relative z-10 flex flex-1 flex-col justify-center py-16">
+        <div className="hero-enter max-w-6xl">
+          <div className="hero-enter-item mb-8 flex flex-wrap items-center gap-3 text-sm text-cream/60" style={{ "--hero-delay": "0ms" } as React.CSSProperties}>
             <OnAirBadge />
             <span>Studio creativo · {site.location}</span>
-          </motion.div>
+          </div>
 
-          {/* Titular: cada línea sube desde una máscara, escalonadas */}
-          <motion.h1
-            variants={stagger(0.12, 0.15)}
+          <h1
             className="text-[clamp(3.25rem,11vw,10rem)] font-bold leading-[0.88] tracking-display"
+            style={{ "--hero-delay": "80ms" } as React.CSSProperties}
           >
-            {HEADLINE.map((line, i) => (
-              <span key={i} className="block overflow-hidden pb-[0.06em]">
-                <motion.span variants={lineReveal} className="block">
-                  {line}
-                </motion.span>
+            <span className="hero-enter-line block overflow-hidden pb-[0.06em]">
+              <span className="hero-enter-mask block">Tu evento,</span>
+            </span>
+            <span className="hero-enter-line block overflow-hidden pb-[0.06em]" style={{ "--hero-delay": "160ms" } as React.CSSProperties}>
+              <span className="hero-enter-mask block">
+                <em className="font-bold italic text-tally">en vivo</em> y
               </span>
-            ))}
-          </motion.h1>
+            </span>
+            <span className="hero-enter-line block overflow-hidden pb-[0.06em]" style={{ "--hero-delay": "240ms" } as React.CSSProperties}>
+              <span className="hero-enter-mask block">sin fronteras.</span>
+            </span>
+          </h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-8 max-w-xl text-lg leading-relaxed text-cream/65 md:text-xl"
+          <p
+            className="hero-enter-item mt-8 max-w-xl text-lg leading-relaxed text-cream/65 md:text-xl"
+            style={{ "--hero-delay": "320ms" } as React.CSSProperties}
           >
             Transmitimos conferencias, lanzamientos, reuniones corporativas y celebraciones en alta calidad,
             para que tu audiencia viva el evento esté donde esté.
-          </motion.p>
+          </p>
 
-          <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-4">
+          <div
+            className="hero-enter-item mt-10 flex flex-wrap items-center gap-4"
+            style={{ "--hero-delay": "400ms" } as React.CSSProperties}
+          >
             <MagneticButton href="#contacto">Cotiza tu transmisión</MagneticButton>
             <MagneticButton href="#proyectos" variant="ghost">
               Ver transmisiones
             </MagneticButton>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </div>
+      </div>
 
-      {/* Barra inferior tipo monitor: REC + timecode + plataformas */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: reduceMotion ? 0 : 1.1, duration: reduceMotion ? 0.3 : 1 }}
-        className="relative z-10 border-t border-cream/10"
+      <div
+        className="hero-enter-item relative z-10 border-t border-cream/10"
+        style={{ "--hero-delay": "520ms" } as React.CSSProperties}
       >
         <div className="container-site flex flex-col gap-4 py-5 md:flex-row md:items-center md:gap-10">
           <div className="flex shrink-0 items-center gap-3 text-xs uppercase tracking-[0.2em] text-cream/50">
@@ -115,7 +103,7 @@ export function Hero() {
             </Marquee>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
