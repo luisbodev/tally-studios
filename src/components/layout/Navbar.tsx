@@ -52,7 +52,10 @@ export function Navbar() {
       <div
         className={cn(
           "transition-[background-color,border-color,backdrop-filter] duration-500",
-          scrolled || open ? "border-b border-cream/10 bg-ink/75 backdrop-blur-xl" : "border-b border-transparent",
+          // Always grounded on mobile so content never bleeds through a transparent bar.
+          scrolled || open
+            ? "border-b border-cream/10 bg-ink/80 backdrop-blur-xl"
+            : "border-b border-transparent bg-ink/70 backdrop-blur-md md:bg-transparent md:backdrop-blur-none",
         )}
       >
         <nav className="container-site flex h-18 items-center justify-between" aria-label="Principal">

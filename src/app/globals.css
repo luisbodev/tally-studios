@@ -110,6 +110,13 @@
     animation-delay: var(--hero-delay, 0ms);
   }
 
+  /* Touch: opacity only — translateY during entrance caused iOS layout/compositing glitches. */
+  @media (pointer: coarse) {
+    .hero-enter-item {
+      animation-name: hero-fade-in;
+    }
+  }
+
   /* Mask reveal solo en puntero fino — en iOS overflow+translateY es frágil. */
   @media (hover: hover) and (pointer: fine) {
     .hero-enter-line .hero-enter-mask {
@@ -117,6 +124,11 @@
       animation-delay: var(--hero-delay, 0ms);
     }
   }
+}
+
+@keyframes hero-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ---------------------------------------------------------------
@@ -144,15 +156,13 @@ html.loader-done #tally-loader {
   color: var(--color-cream);
   transition:
     opacity 0.55s var(--ease-out-expo),
-    visibility 0.55s var(--ease-out-expo),
-    transform 0.7s var(--ease-out-expo);
+    visibility 0.55s var(--ease-out-expo);
 }
 
 .tally-loader--out {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(-2.5%);
 }
 
 .tally-loader__grid {
