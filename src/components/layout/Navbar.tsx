@@ -43,12 +43,11 @@ export function Navbar() {
   });
 
   return (
-    <motion.header
-      // Empieza visible (opacity 1): en móvil/LTE un initial opacity 0 deja la UI en blanco hasta hidratar.
-      initial={{ y: -24, opacity: 1 }}
-      animate={{ y: hidden ? "-110%" : "0%", opacity: 1 }}
-      transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
-      className="fixed inset-x-0 top-0 z-50"
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 transition-transform duration-500 ease-out-expo",
+        hidden ? "-translate-y-[110%]" : "translate-y-0",
+      )}
     >
       <div
         className={cn(
@@ -90,19 +89,22 @@ export function Navbar() {
               aria-label={open ? "Cerrar menú" : "Abrir menú"}
               className="relative flex size-10 items-center justify-center rounded-full border border-cream/15 md:hidden"
             >
-              <motion.span
-                className="absolute h-[1.5px] w-4 bg-cream"
-                animate={open ? { rotate: 45, y: 0 } : { rotate: 0, y: -3 }}
+              <span
+                className={cn(
+                  "absolute h-[1.5px] w-4 bg-cream transition-transform duration-300 ease-out-expo",
+                  open ? "translate-y-0 rotate-45" : "-translate-y-[3px]",
+                )}
               />
-              <motion.span
-                className="absolute h-[1.5px] w-4 bg-cream"
-                animate={open ? { rotate: -45, y: 0 } : { rotate: 0, y: 3 }}
+              <span
+                className={cn(
+                  "absolute h-[1.5px] w-4 bg-cream transition-transform duration-300 ease-out-expo",
+                  open ? "translate-y-0 -rotate-45" : "translate-y-[3px]",
+                )}
               />
             </button>
           </div>
         </nav>
 
-        {/* Menú móvil con AnimatePresence (anima también al desmontar) */}
         <AnimatePresence onExitComplete={scrollToPending}>
           {open && (
             <motion.div
@@ -115,27 +117,23 @@ export function Navbar() {
             >
               <ul className="container-site flex flex-col pb-8 pt-2">
                 {site.nav.map((item, i) => (
-                  <motion.li
-                    key={item.href}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + i * 0.06, duration: 0.5, ease: EASE_OUT_EXPO }}
-                  >
+                  <li key={item.href}>
                     <a
                       href={item.href}
                       onClick={(e) => goTo(e, item.href)}
                       className="flex items-center justify-between border-b border-cream/10 py-4 text-3xl font-bold tracking-display"
+                      style={{ animationDelay: `${50 + i * 60}ms` }}
                     >
                       {item.label}
                       <span className="font-mono text-xs font-normal tracking-normal text-cream/40">0{i + 1}</span>
                     </a>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </motion.header>
+    </header>
   );
 }
