@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { LogoWordmark } from "@/components/ui/Logo";
 import { site } from "@/lib/site";
@@ -16,6 +16,25 @@ export function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pendingHash = useRef<string | null>(null);
+
+  /**
+   * En móvil, cerrar el menú (animación de altura) interrumpe el scroll nativo
+   * del ancla. Guardamos el destino y hacemos scroll cuando el menú terminó de cerrarse.
+   */
+  function goTo(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    e.preventDefault();
+    pendingHash.current = href;
+    setOpen(false);
+  }
+
+  function scrollToPending() {
+    const href = pendingHash.current;
+    pendingHash.current = null;
+    if (!href) return;
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", href);
+  }
 
   useMotionValueEvent(scrollY, "change", (current) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -37,7 +56,7 @@ export function Navbar() {
         )}
       >
         <nav className="container-site flex h-18 items-center justify-between" aria-label="Principal">
-          <a href="#inicio" aria-label="Tally Studios — inicio" className="text-cream" onClick={() => setOpen(false)}>
+          <a href="#inicio" aria-label="Tally Studios — inicio" className="text-cream" onClick={(e) => open && goTo(e, "#inicio")}>
             <LogoWordmark className="w-[92px]" />
           </a>
 
@@ -83,7 +102,7 @@ export function Navbar() {
         </nav>
 
         {/* Menú móvil con AnimatePresence (anima también al desmontar) */}
-        <AnimatePresence>
+        <AnimatePresence onExitComplete={scrollToPending}>
           {open && (
             <motion.div
               id="mobile-menu"
@@ -103,7 +122,7 @@ export function Navbar() {
                   >
                     <a
                       href={item.href}
-                      onClick={() => setOpen(false)}
+                      onClick={(e) => goTo(e, item.href)}
                       className="flex items-center justify-between border-b border-cream/10 py-4 text-3xl font-bold tracking-display"
                     >
                       {item.label}

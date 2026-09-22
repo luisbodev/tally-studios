@@ -10,6 +10,11 @@ export type Project = {
   year?: string;
   videoId: string;
   start?: number;
+  /**
+   * false si YouTube no permite verlo fuera de su sitio (p. ej. por música con
+   * derechos). En ese caso el clic abre el video en YouTube.
+   */
+  embeddable?: boolean;
   /** Ancho en desktop (grid de 12 columnas). */
   span: 6 | 12;
 };
@@ -22,6 +27,7 @@ export const projects: Project[] = [
     year: "2026",
     videoId: "uO5c9oxYJCA",
     start: 6035,
+    embeddable: false, // bloqueado para sitios externos por LatinAutor - UMPG
     span: 12,
   },
   {

@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
  * Portafolio de transmisiones. Hover:
  *  - el resto de proyectos se atenúa (estado compartido `active`)
  *  - la miniatura hace zoom suave y el botón de play crece
- * Clic: la miniatura se reemplaza por el reproductor de YouTube (sin salir del sitio).
+ * Clic: la miniatura se reemplaza por el reproductor de YouTube (sin salir del sitio),
+ * o abre YouTube si el video no permite incrustarse (`embeddable: false`).
  */
 export function ProjectsGallery({ projects }: { projects: Project[] }) {
   const [active, setActive] = useState<string | null>(null);
@@ -52,36 +53,13 @@ export function ProjectsGallery({ projects }: { projects: Project[] }) {
                       allowFullScreen
                     />
                   ) : (
-                    <motion.button
+                    <Poster
                       key="poster"
-                      type="button"
-                      exit={{ opacity: 0 }}
-                      onClick={() => setPlaying(project.id)}
+                      project={project}
+                      zoomed={active === project.id}
+                      onPlay={() => setPlaying(project.id)}
                       onFocus={() => setActive(project.id)}
-                      aria-label={`Reproducir: ${project.title}`}
-                      className="absolute inset-0 block size-full cursor-pointer"
-                    >
-                      <motion.div
-                        className="absolute inset-0"
-                        animate={{ scale: active === project.id ? 1.04 : 1 }}
-                        transition={{ duration: 1, ease: EASE_OUT_EXPO }}
-                      >
-                        <Thumbnail videoId={project.videoId} alt={project.title} wide={project.span === 12} />
-                      </motion.div>
-                      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
-
-                      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-ink/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cream backdrop-blur">
-                        <span className="size-1.5 rounded-full bg-tally" /> Transmisión en vivo
-                      </span>
-
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="flex size-20 items-center justify-center rounded-full bg-tally text-cream shadow-[0_0_0_10px_rgb(255_0_8/0.18)] transition-transform duration-500 ease-out-expo group-hover:scale-110 md:size-24">
-                          <svg viewBox="0 0 24 24" className="ml-1 size-7 md:size-8" aria-hidden>
-                            <path d="M7 5.5v13c0 .8.9 1.3 1.6.9l10.4-6.5c.6-.4.6-1.4 0-1.8L8.6 4.6C7.9 4.2 7 4.7 7 5.5z" fill="currentColor" />
-                          </svg>
-                        </span>
-                      </span>
-                    </motion.button>
+                    />
                   )}
                 </AnimatePresence>
               </div>
@@ -108,6 +86,78 @@ export function ProjectsGallery({ projects }: { projects: Project[] }) {
         );
       })}
     </div>
+  );
+}
+
+/**
+ * Portada del video. Si YouTube permite incrustarlo, es un botón que abre el
+ * reproductor aquí mismo; si no, es un enlace que abre el video en YouTube.
+ */
+function Poster({
+  project,
+  zoomed,
+  onPlay,
+  onFocus,
+}: {
+  project: Project;
+  zoomed: boolean;
+  onPlay: () => void;
+  onFocus: () => void;
+}) {
+  const embeddable = project.embeddable !== false;
+  const content = (
+    <>
+      <motion.div
+        className="absolute inset-0"
+        animate={{ scale: zoomed ? 1.04 : 1 }}
+        transition={{ duration: 1, ease: EASE_OUT_EXPO }}
+      >
+        <Thumbnail videoId={project.videoId} alt={project.title} wide={project.span === 12} />
+      </motion.div>
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+
+      <span className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-ink/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cream backdrop-blur">
+        <span className="size-1.5 rounded-full bg-tally" /> Transmisión en vivo
+      </span>
+
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="flex size-20 items-center justify-center rounded-full bg-tally text-cream shadow-[0_0_0_10px_rgb(255_0_8/0.18)] transition-transform duration-500 ease-out-expo group-hover:scale-110 md:size-24">
+          <svg viewBox="0 0 24 24" className="ml-1 size-7 md:size-8" aria-hidden>
+            <path d="M7 5.5v13c0 .8.9 1.3 1.6.9l10.4-6.5c.6-.4.6-1.4 0-1.8L8.6 4.6C7.9 4.2 7 4.7 7 5.5z" fill="currentColor" />
+          </svg>
+        </span>
+      </span>
+    </>
+  );
+  const className = "absolute inset-0 block size-full cursor-pointer";
+
+  if (!embeddable) {
+    return (
+      <motion.a
+        href={youtubeUrl(project)}
+        target="_blank"
+        rel="noreferrer"
+        exit={{ opacity: 0 }}
+        onFocus={onFocus}
+        aria-label={`Ver en YouTube: ${project.title}`}
+        className={className}
+      >
+        {content}
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.button
+      type="button"
+      exit={{ opacity: 0 }}
+      onClick={onPlay}
+      onFocus={onFocus}
+      aria-label={`Reproducir: ${project.title}`}
+      className={className}
+    >
+      {content}
+    </motion.button>
   );
 }
 
