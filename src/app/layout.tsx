@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { LoadingScreenRoot } from "@/components/layout/LoadingScreenRoot";
 import { MotionProvider } from "@/components/providers/MotionProvider";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es" className={`${inter.variable} h-full`}>
       <body className="min-h-full">
+        <LoadingScreenRoot />
         <a
           href="#contenido"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-cream focus:px-4 focus:py-2 focus:text-ink"
