@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useReducedMotion, useScroll, type MotionValue } from "motion/react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { useScrollMap } from "@/lib/use-scroll-map";
 
 /** Texto de "Esencia" del manual. Las palabras entre *asteriscos* van en itálica. */
 const ESSENCE =
@@ -21,6 +22,7 @@ const VALUES = [
  */
 export function Manifesto() {
   const ref = useRef<HTMLParagraphElement>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.45"] });
   const words = ESSENCE.split(" ");
 
@@ -35,7 +37,7 @@ export function Manifesto() {
             const start = i / words.length;
             const end = start + 1 / words.length;
             return (
-              <Word key={i} progress={scrollYProgress} range={[start, end]}>
+              <Word key={i} progress={scrollYProgress} range={[start, end]} lit={!!reduceMotion}>
                 {word}
               </Word>
             );
@@ -56,8 +58,19 @@ export function Manifesto() {
   );
 }
 
-function Word({ children, progress, range }: { children: string; progress: MotionValue<number>; range: [number, number] }) {
-  const opacity = useTransform(progress, range, [0.14, 1]);
+function Word({
+  children,
+  progress,
+  range,
+  lit,
+}: {
+  children: string;
+  progress: MotionValue<number>;
+  range: [number, number];
+  lit: boolean;
+}) {
+  // useScrollMap (no native timeline) — Safari deja opacity “pegada” con useTransform rangos.
+  const opacity = useScrollMap(progress, range, lit ? [1, 1] : [0.28, 1]);
   const accent = children.startsWith("*");
   const text = children.replaceAll("*", "");
   return (
