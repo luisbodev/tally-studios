@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ---------------------------------------------------------------
+   Tokens de marca (Manual de identidad visual — Tally Studios)
+   Rojo #FF0008 · Crema #F5F7EA · Negro #111010 · Verde #6CFC4C
+   --------------------------------------------------------------- */
+@theme {
+  --color-tally: #ff0008;
+  --color-tally-600: #d90007;
+  --color-cream: #f5f7ea;
+  --color-ink: #111010;
+  --color-ink-800: #181717;
+  --color-ink-700: #211f1f;
+  --color-live: #6cfc4c;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Tracking del manual: principal -100 → display, secundario -55 → texto */
+  --tracking-display: -0.065em;
+  --tracking-tight-brand: -0.035em;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-pulse-dot: pulse-dot 1.6s var(--ease-out-expo) infinite;
+
+  @keyframes pulse-dot {
+    0% { box-shadow: 0 0 0 0 currentColor; }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-ink text-cream font-sans antialiased;
+    letter-spacing: -0.011em;
+  }
+
+  ::selection {
+    background: var(--color-tally);
+    color: var(--color-cream);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-tally);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+}
+
+@utility container-site {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @variant md { padding-inline: 2.5rem; }
+}
+
+/* Retícula técnica sutil (evoca un monitor de control) */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(245 247 234 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(245 247 234 / 0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* Grano fílmico muy ligero */
+@utility bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
 }

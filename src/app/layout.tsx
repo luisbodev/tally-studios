@@ -1,33 +1,52 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import { MotionProvider } from "@/components/providers/MotionProvider";
+import { site } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Tipografía oficial del manual: Inter (Bold para titulares, Bold Italic como acento)
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Tally Studios — Próximamente",
-  description: "Estamos preparando algo especial. Muy pronto estaremos en línea.",
+  metadataBase: new URL(site.url),
+  title: {
+    default: "Tally Studios — Transmisiones en vivo de eventos",
+    template: "%s · Tally Studios",
+  },
+  description: site.description,
+  openGraph: {
+    title: "Tally Studios",
+    description: site.description,
+    url: site.url,
+    siteName: site.name,
+    locale: "es_SV",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Tally Studios", description: site.description },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  themeColor: "#111010",
+  colorScheme: "dark",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="es" className={`${inter.variable} h-full`}>
+      <body className="min-h-full">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-cream focus:px-4 focus:py-2 focus:text-ink"
+        >
+          Saltar al contenido
+        </a>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
