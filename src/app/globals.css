@@ -78,3 +78,43 @@
 @utility bg-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
 }
+
+/* Hero entrance: CSS only (no Motion). Visible by default; animation is progressive enhancement. */
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-mask-up {
+  from { transform: translateY(110%); }
+  to { transform: translateY(0); }
+}
+
+/* Always readable without JS/animation — never leave opacity at 0 as the resting style. */
+.hero-enter-item,
+.hero-enter-mask {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-enter-item {
+    /* No fill-mode "both": if the animation never runs, content stays visible. */
+    animation: hero-fade-up 0.85s var(--ease-out-expo);
+    animation-delay: var(--hero-delay, 0ms);
+  }
+
+  /* Mask reveal solo en puntero fino — en iOS overflow+translateY es frágil. */
+  @media (hover: hover) and (pointer: fine) {
+    .hero-enter-line .hero-enter-mask {
+      animation: hero-mask-up 1s var(--ease-out-expo);
+      animation-delay: var(--hero-delay, 0ms);
+    }
+  }
+}

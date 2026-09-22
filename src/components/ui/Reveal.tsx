@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { fadeIn, fadeUp, maskUp, stagger } from "@/lib/motion";
+import { fadeUp, maskUp, stagger } from "@/lib/motion";
 
 type RevealProps = {
   children: React.ReactNode;
@@ -22,22 +23,41 @@ function withDelay(variants: Variants, delay: number): Variants {
   return { ...variants, show: { ...show, transition: { ...show.transition, delay } } };
 }
 
+/** Si whileInView no dispara (iOS quirks), fuerza "show" tras un momento. */
+function useRevealFallback(active: boolean) {
+  const [forced, setForced] = useState(false);
+  useEffect(() => {
+    if (!active || forced) return;
+    const id = window.setTimeout(() => setForced(true), 1200);
+    return () => window.clearTimeout(id);
+  }, [active, forced]);
+  return forced;
+}
+
 /**
- * Aparición al hacer scroll. Envuelve cualquier bloque:
- *
- *   <Reveal><h2>Hola</h2></Reveal>
- *
- * Usa `whileInView` + `viewport.once` para animar solo la primera vez.
+ * Aparición al hacer scroll. Envuelve cualquier bloque.
+ * Con reducir movimiento, renderiza HTML estático (siempre visible).
  */
-export function Reveal({ children, className, delay = 0, variants = fadeUp, as = "div", amount = 0.2 }: RevealProps) {
+export function Reveal({ children, className, delay = 0, variants = fadeUp, as = "div", amount = 0.15 }: RevealProps) {
   const Component = motion[as];
+  const reduceMotion = useReducedMotion();
+  const [seen, setSeen] = useState(false);
+  const forced = useRevealFallback(!seen && !reduceMotion);
+
+  if (reduceMotion) {
+    const Tag = as;
+    return <Tag className={className}>{children}</Tag>;
+  }
+
   return (
     <Component
       className={className}
       variants={withDelay(variants, delay)}
       initial="hidden"
+      animate={forced || seen ? "show" : undefined}
       whileInView="show"
-      viewport={{ once: true, amount, margin: "0px 0px -8% 0px" }}
+      viewport={{ once: true, amount, margin: "0px 0px -5% 0px" }}
+      onViewportEnter={() => setSeen(true)}
     >
       {children}
     </Component>
@@ -45,21 +65,21 @@ export function Reveal({ children, className, delay = 0, variants = fadeUp, as =
 }
 
 /**
- * Texto que sube desde una máscara. El disparador `whileInView` va en el
- * contenedor (visible) y el hijo hereda la variante: si el disparador
- * estuviera en el hijo oculto por la máscara, nunca se detectaría en pantalla.
- * Con "reducir movimiento", usa fade en vez de y (evita texto atrapado fuera de la máscara).
+ * Texto que sube desde una máscara. Con "reducir movimiento", renderiza sin máscara.
  */
 export function MaskReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const reduceMotion = useReducedMotion();
+  if (reduceMotion) {
+    return <span className={`block ${className ?? ""}`}>{children}</span>;
+  }
   return (
     <motion.span
       className={`block overflow-hidden pb-[0.1em] ${className ?? ""}`}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.35 }}
+      viewport={{ once: true, amount: 0.25 }}
     >
-      <motion.span className="block" variants={withDelay(reduceMotion ? fadeIn : maskUp, delay)}>
+      <motion.span className="block" variants={withDelay(maskUp, delay)}>
         {children}
       </motion.span>
     </motion.span>
@@ -68,17 +88,13 @@ export function MaskReveal({ children, className, delay = 0 }: { children: React
 
 /**
  * Contenedor que escalona la entrada de sus hijos <StaggerItem>.
- *
- *   <Stagger className="grid grid-cols-3">
- *     {items.map(i => <StaggerItem key={i.id}>…</StaggerItem>)}
- *   </Stagger>
  */
 export function Stagger({
   children,
   className,
   interval = 0.1,
   delay = 0,
-  amount = 0.15,
+  amount = 0.1,
   as = "div",
 }: {
   children: React.ReactNode;
@@ -89,13 +105,24 @@ export function Stagger({
   as?: "div" | "ul" | "ol";
 }) {
   const Component = motion[as];
+  const reduceMotion = useReducedMotion();
+  const [seen, setSeen] = useState(false);
+  const forced = useRevealFallback(!seen && !reduceMotion);
+
+  if (reduceMotion) {
+    const Tag = as;
+    return <Tag className={className}>{children}</Tag>;
+  }
+
   return (
     <Component
       className={className}
       variants={stagger(interval, delay)}
       initial="hidden"
+      animate={forced || seen ? "show" : undefined}
       whileInView="show"
       viewport={{ once: true, amount, margin: "0px 0px -5% 0px" }}
+      onViewportEnter={() => setSeen(true)}
     >
       {children}
     </Component>
