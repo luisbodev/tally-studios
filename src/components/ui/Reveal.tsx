@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, type Variants } from "motion/react";
-import { fadeUp, maskUp, stagger } from "@/lib/motion";
+import { motion, useReducedMotion, type Variants } from "motion/react";
+import { fadeIn, fadeUp, maskUp, stagger } from "@/lib/motion";
 
 type RevealProps = {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ function withDelay(variants: Variants, delay: number): Variants {
  *
  * Usa `whileInView` + `viewport.once` para animar solo la primera vez.
  */
-export function Reveal({ children, className, delay = 0, variants = fadeUp, as = "div", amount = 0.3 }: RevealProps) {
+export function Reveal({ children, className, delay = 0, variants = fadeUp, as = "div", amount = 0.2 }: RevealProps) {
   const Component = motion[as];
   return (
     <Component
@@ -37,7 +37,7 @@ export function Reveal({ children, className, delay = 0, variants = fadeUp, as =
       variants={withDelay(variants, delay)}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount }}
+      viewport={{ once: true, amount, margin: "0px 0px -8% 0px" }}
     >
       {children}
     </Component>
@@ -48,16 +48,18 @@ export function Reveal({ children, className, delay = 0, variants = fadeUp, as =
  * Texto que sube desde una máscara. El disparador `whileInView` va en el
  * contenedor (visible) y el hijo hereda la variante: si el disparador
  * estuviera en el hijo oculto por la máscara, nunca se detectaría en pantalla.
+ * Con "reducir movimiento", usa fade en vez de y (evita texto atrapado fuera de la máscara).
  */
 export function MaskReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.span
       className={`block overflow-hidden pb-[0.1em] ${className ?? ""}`}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.6 }}
+      viewport={{ once: true, amount: 0.35 }}
     >
-      <motion.span className="block" variants={withDelay(maskUp, delay)}>
+      <motion.span className="block" variants={withDelay(reduceMotion ? fadeIn : maskUp, delay)}>
         {children}
       </motion.span>
     </motion.span>
@@ -76,7 +78,7 @@ export function Stagger({
   className,
   interval = 0.1,
   delay = 0,
-  amount = 0.2,
+  amount = 0.15,
   as = "div",
 }: {
   children: React.ReactNode;
@@ -93,7 +95,7 @@ export function Stagger({
       variants={stagger(interval, delay)}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount }}
+      viewport={{ once: true, amount, margin: "0px 0px -5% 0px" }}
     >
       {children}
     </Component>

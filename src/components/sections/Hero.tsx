@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { LogoMark } from "@/components/ui/Logo";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Marquee, OnAirBadge, Timecode } from "@/components/ui/Broadcast";
-import { EASE_OUT_EXPO, fadeUp, maskUp, stagger } from "@/lib/motion";
+import { EASE_OUT_EXPO, fadeIn, fadeUp, maskUp, stagger } from "@/lib/motion";
 import { site } from "@/lib/site";
 
 const HEADLINE: React.ReactNode[] = [
@@ -18,15 +18,17 @@ const HEADLINE: React.ReactNode[] = [
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
 
   // Progreso de 0 → 1 mientras el hero sale de la pantalla
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  // Parallax: el contenido baja más lento y se desvanece; el logo de fondo sube y rota
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "28%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
-  const markY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
-  const markRotate = useTransform(scrollYProgress, [0, 1], [0, -10]);
+  // Parallax solo con transform (seguro en Safari). No usar opacity ligada al
+  // scroll: el path nativo ViewTimeline rompe opacity en iOS y deja el hero en blanco.
+  const contentY = useTransform(scrollYProgress, [0, 1], reduceMotion ? ["0%", "0%"] : ["0%", "28%"]);
+  const markY = useTransform(scrollYProgress, [0, 1], reduceMotion ? ["0%", "0%"] : ["0%", "-30%"]);
+  const markRotate = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, -10]);
+  const lineReveal = reduceMotion ? fadeIn : maskUp;
 
   return (
     <section ref={ref} id="inicio" className="relative flex min-h-svh flex-col overflow-hidden pt-24">
@@ -38,16 +40,16 @@ export function Hero() {
       <motion.div
         aria-hidden
         style={{ y: markY, rotate: markRotate }}
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.6, ease: EASE_OUT_EXPO, delay: 0.3 }}
+        transition={{ duration: reduceMotion ? 0.4 : 1.6, ease: EASE_OUT_EXPO, delay: reduceMotion ? 0 : 0.3 }}
         className="pointer-events-none absolute -right-[18%] top-[14%] w-[85vw] max-w-[980px] text-cream/[0.035] md:-right-[8%] md:w-[62vw]"
       >
         <LogoMark mono />
       </motion.div>
 
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity }}
+        style={{ y: contentY }}
         className="container-site relative z-10 flex flex-1 flex-col justify-center py-16"
       >
         <motion.div initial="hidden" animate="show" variants={stagger(0.12, 0.1)} className="max-w-6xl">
@@ -63,7 +65,7 @@ export function Hero() {
           >
             {HEADLINE.map((line, i) => (
               <span key={i} className="block overflow-hidden pb-[0.06em]">
-                <motion.span variants={maskUp} className="block">
+                <motion.span variants={lineReveal} className="block">
                   {line}
                 </motion.span>
               </span>
@@ -91,7 +93,7 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: 1 }}
+        transition={{ delay: reduceMotion ? 0 : 1.1, duration: reduceMotion ? 0.3 : 1 }}
         className="relative z-10 border-t border-cream/10"
       >
         <div className="container-site flex flex-col gap-4 py-5 md:flex-row md:items-center md:gap-10">

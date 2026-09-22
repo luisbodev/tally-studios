@@ -44,7 +44,8 @@ export function Navbar() {
 
   return (
     <motion.header
-      initial={{ y: -100, opacity: 0 }}
+      // Empieza visible (opacity 1): en móvil/LTE un initial opacity 0 deja la UI en blanco hasta hidratar.
+      initial={{ y: -24, opacity: 1 }}
       animate={{ y: hidden ? "-110%" : "0%", opacity: 1 }}
       transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
       className="fixed inset-x-0 top-0 z-50"
