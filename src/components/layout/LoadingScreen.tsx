@@ -27,6 +27,8 @@ export function LoadingScreen() {
     }
 
     document.documentElement.classList.add("loader-active");
+    // Avoid restoring mid-page scroll under the fixed nav while the splash is up.
+    window.scrollTo(0, 0);
 
     let done = false;
     const started = Date.now();
@@ -40,6 +42,8 @@ export function LoadingScreen() {
       window.setTimeout(() => {
         setPhase("out");
         document.documentElement.classList.add("loader-done");
+        document.documentElement.classList.remove("loader-active");
+        window.scrollTo(0, 0);
         try {
           sessionStorage.setItem("tally-intro", "1");
         } catch {
@@ -47,7 +51,6 @@ export function LoadingScreen() {
         }
         window.setTimeout(() => {
           setPhase("gone");
-          document.documentElement.classList.remove("loader-active");
         }, 650);
       }, wait);
     }

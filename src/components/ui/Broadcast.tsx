@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -28,16 +27,36 @@ export function LiveDot({ className }: { className?: string }) {
 }
 
 /**
- * Timecode estilo SMPTE (HH:MM:SS:FF a 30 fps). Se actualiza escribiendo
- * directamente en el DOM con requestAnimationFrame para no re-renderizar.
+ * Timecode SMPTE dibujado en canvas.
+ * Actualizar textContent cada frame en iOS Safari pinta un rectángulo negro
+ * detrás de los glifos; el canvas evita esa capa de texto.
  */
 export function Timecode({ className }: { className?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
+  const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cssWidth = 96;
+    const cssHeight = 14;
+    canvas.width = Math.ceil(cssWidth * dpr);
+    canvas.height = Math.ceil(cssHeight * dpr);
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.font = "500 12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#b8baaf";
+
     const start = performance.now();
     let raf = 0;
     const pad = (n: number) => String(n).padStart(2, "0");
+
     const tick = (now: number) => {
       const elapsed = now - start;
       const frames = Math.floor((elapsed / 1000) * 30) % 30;
@@ -45,21 +64,32 @@ export function Timecode({ className }: { className?: string }) {
       const s = total % 60;
       const m = Math.floor(total / 60) % 60;
       const h = Math.floor(total / 3600);
-      if (ref.current) ref.current.textContent = `${pad(h)}:${pad(m)}:${pad(s)}:${pad(frames)}`;
+      const label = `${pad(h)}:${pad(m)}:${pad(s)}:${pad(frames)}`;
+
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+      ctx.fillText(label, 0, cssHeight / 2);
       raf = requestAnimationFrame(tick);
     };
+
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
 
   return (
-    <span ref={ref} className={cn("font-mono tabular-nums", className)} aria-hidden>
-      00:00:00:00
-    </span>
+    <canvas
+      ref={ref}
+      className={cn("block bg-transparent", className)}
+      width={96}
+      height={14}
+      aria-hidden
+    />
   );
 }
 
-/** Cinta infinita horizontal. Duplica el contenido para que el loop sea continuo. */
+/**
+ * Cinta infinita horizontal via CSS (no Motion transforms).
+ * Motion + ancestor opacity painted solid black bars on iOS Safari.
+ */
 export function Marquee({
   children,
   duration = 30,
@@ -72,17 +102,23 @@ export function Marquee({
   className?: string;
 }) {
   return (
-    <div className={cn("relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]", className)}>
-      <motion.div
-        className="flex shrink-0 items-center"
-        animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
-        transition={{ duration, ease: "linear", repeat: Infinity }}
+    <div
+      className={cn(
+        "relative flex overflow-hidden bg-transparent",
+        "[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
+        "[-webkit-mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
+        className,
+      )}
+    >
+      <div
+        className={cn("flex w-max shrink-0 items-center bg-transparent", reverse ? "animate-marquee-reverse" : "animate-marquee")}
+        style={{ animationDuration: `${duration}s` }}
       >
-        <div className="flex shrink-0 items-center">{children}</div>
-        <div className="flex shrink-0 items-center" aria-hidden>
+        <div className="flex shrink-0 items-center bg-transparent">{children}</div>
+        <div className="flex shrink-0 items-center bg-transparent" aria-hidden>
           {children}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

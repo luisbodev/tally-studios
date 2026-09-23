@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useMotionValue, useSpring } from "motion/react";
 import { cn } from "@/lib/utils";
 
 type MagneticButtonProps = {
@@ -9,50 +8,44 @@ type MagneticButtonProps = {
   children: React.ReactNode;
   variant?: "primary" | "ghost";
   className?: string;
-  /** Qué tanto "atrae" el cursor (0–1). */
+  /** Qué tanto "atrae" el cursor (0–1). Solo mouse. */
   strength?: number;
 };
 
 /**
- * CTA con efecto magnético en puntero fino. En touch no aplica springs
- * (evita transforms raros en iOS); el enlace sigue siendo un <a> normal.
+ * CTA. Magnetic follow is mouse-only via rAF DOM writes (no Motion transforms),
+ * so iOS never gets stuck with a translated button under the navbar.
  */
 export function MagneticButton({ href, children, variant = "primary", className, strength = 0.3 }: MagneticButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 220, damping: 16, mass: 0.4 });
-  const springY = useSpring(y, { stiffness: 220, damping: 16, mass: 0.4 });
 
   function handleMove(e: React.PointerEvent<HTMLAnchorElement>) {
     if (e.pointerType !== "mouse" || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    x.set((e.clientX - (rect.left + rect.width / 2)) * strength);
-    y.set((e.clientY - (rect.top + rect.height / 2)) * strength);
+    const x = (e.clientX - (rect.left + rect.width / 2)) * strength;
+    const y = (e.clientY - (rect.top + rect.height / 2)) * strength;
+    ref.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
   }
 
   function reset() {
-    x.set(0);
-    y.set(0);
+    if (!ref.current) return;
+    ref.current.style.transform = "translate3d(0, 0, 0)";
   }
 
-  const classes = cn(
-    "group relative inline-flex h-14 items-center gap-3 overflow-hidden rounded-full px-7 text-[15px] font-semibold tracking-tight-brand transition-colors duration-300",
-    variant === "primary"
-      ? "bg-tally text-cream hover:bg-tally-600"
-      : "border border-cream/20 text-cream hover:border-cream/60",
-    className,
-  );
-
   return (
-    <motion.a
+    <a
       ref={ref}
       href={href}
       onPointerMove={handleMove}
       onPointerLeave={reset}
-      style={{ x: springX, y: springY }}
-      whileTap={{ scale: 0.96 }}
-      className={classes}
+      className={cn(
+        "group relative inline-flex h-12 items-center gap-3 overflow-hidden rounded-full px-6 text-[15px] font-semibold tracking-tight-brand transition-[colors,transform] duration-300 will-change-transform md:h-14 md:px-7",
+        "active:scale-[0.98]",
+        variant === "primary"
+          ? "bg-tally text-cream hover:bg-tally-600"
+          : "border border-cream/20 text-cream hover:border-cream/60",
+        className,
+      )}
     >
       {variant === "ghost" && (
         <span
@@ -69,7 +62,7 @@ export function MagneticButton({ href, children, variant = "primary", className,
           variant === "ghost" && "transition-colors group-hover:text-ink",
         )}
       />
-    </motion.a>
+    </a>
   );
 }
 
