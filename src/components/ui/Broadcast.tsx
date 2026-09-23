@@ -52,7 +52,15 @@ export function Timecode({ className }: { className?: string }) {
   }, []);
 
   return (
-    <span ref={ref} className={cn("bg-transparent font-mono tabular-nums", className)} aria-hidden>
+    <span
+      ref={ref}
+      className={cn(
+        /* Avoid text-*/opacity — iOS Safari paints a solid black box behind alpha glyphs. */
+        "font-mono tabular-nums text-[#b8baaf] [background:none] [-webkit-text-fill-color:currentColor]",
+        className,
+      )}
+      aria-hidden
+    >
       00:00:00:00
     </span>
   );

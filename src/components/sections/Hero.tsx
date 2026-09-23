@@ -106,24 +106,24 @@ export function Hero() {
       {/* No hero-enter opacity here: on iOS, opacity + marquee transforms paint black boxes. */}
       <div className="relative z-10 mt-auto border-t border-cream/10">
         <div className="container-site flex flex-col gap-3 py-4 md:flex-row md:items-center md:gap-10 md:py-5">
-          <div className="flex shrink-0 items-center gap-3 bg-transparent text-xs uppercase tracking-[0.2em] text-cream/50">
+          <div className="flex shrink-0 items-center gap-3 text-xs uppercase tracking-[0.2em] text-[#8e9086]">
             <span className="flex items-center gap-2 text-tally">
               <span className="size-2 rounded-full bg-tally" /> Rec
             </span>
-            <Timecode className="bg-transparent text-cream/70" />
+            <Timecode />
           </div>
-          <div className="flex min-w-0 flex-1 items-center gap-4 bg-transparent md:gap-6">
-            <span className="shrink-0 text-[10px] uppercase tracking-[0.2em] text-cream/40 md:text-xs">
+          <div className="flex min-w-0 flex-1 items-center gap-4 md:gap-6">
+            <span className="shrink-0 text-[10px] uppercase tracking-[0.2em] text-[#6f7168] md:text-xs">
               Transmitimos a
             </span>
-            <Marquee duration={28} className="min-w-0 flex-1 bg-transparent">
+            <Marquee duration={28} className="min-w-0 flex-1">
               {site.platforms.map((p) => (
                 <span
                   key={p}
-                  className="flex items-center gap-6 bg-transparent pr-6 text-sm font-semibold tracking-tight-brand text-cream/70"
+                  className="flex items-center gap-6 pr-6 text-sm font-semibold tracking-tight-brand text-[#b8baaf]"
                 >
                   {p}
-                  <span className="size-1 rounded-full bg-cream/25" />
+                  <span className="size-1 rounded-full bg-[#4a4b46]" />
                 </span>
               ))}
             </Marquee>
