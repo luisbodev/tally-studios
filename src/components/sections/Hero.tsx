@@ -9,10 +9,10 @@ import { site } from "@/lib/site";
 
 /**
  * Hero layout notes (iOS):
- * - Do NOT combine min-h-svh + flex justify-center + overflow-hidden when
- *   content can exceed the viewport — the headline gets clipped and CTAs
- *   slide up under the fixed navbar.
- * - overflow-x-hidden only; section may grow taller than the screen.
+ * - Never use overflow-hidden / overflow-x-hidden on this section with min-h-svh:
+ *   CSS makes overflow-y compute to `auto`, which creates a nested scrollbar
+ *   (double scroll) when content is taller than the viewport.
+ * - Use overflow-x-clip (does not create a scrollport) so only the page scrolls.
  * - Mobile: top-aligned content; desktop: vertically centered.
  */
 export function Hero() {
@@ -27,7 +27,7 @@ export function Hero() {
     <section
       ref={ref}
       id="inicio"
-      className="relative flex min-h-svh flex-col overflow-x-hidden pt-20 md:pt-24"
+      className="relative flex min-h-svh flex-col overflow-x-clip pt-20 md:pt-24"
     >
       <div
         aria-hidden

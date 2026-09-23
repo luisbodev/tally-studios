@@ -138,6 +138,12 @@ html.loader-active {
   overflow: hidden;
 }
 
+/* Prefer page scroll only — never nest vertical scrollports in sections. */
+#inicio {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
 /* Skip / done: survive React hydration (class lives on <html>, not the loader node). */
 html.loader-skip #tally-loader,
 html.loader-done #tally-loader {
