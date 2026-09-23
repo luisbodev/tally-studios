@@ -55,7 +55,7 @@ export function Timecode({ className }: { className?: string }) {
     <span
       ref={ref}
       className={cn(
-        /* Avoid text-*/opacity — iOS Safari paints a solid black box behind alpha glyphs. */
+        // Solid muted color — cream/opacity text paints a black box on iOS Safari.
         "font-mono tabular-nums text-[#b8baaf] [background:none] [-webkit-text-fill-color:currentColor]",
         className,
       )}
