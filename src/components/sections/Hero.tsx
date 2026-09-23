@@ -37,7 +37,10 @@ export function Hero() {
         aria-hidden
         className="pointer-events-none absolute -left-40 top-1/3 size-[42rem] rounded-full bg-tally/15 blur-[140px]"
       />
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grain opacity-[0.07] mix-blend-overlay" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bottom-24 bg-grain opacity-[0.07] mix-blend-overlay md:bottom-20"
+      />
 
       <motion.div
         aria-hidden
