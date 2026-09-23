@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -53,13 +52,16 @@ export function Timecode({ className }: { className?: string }) {
   }, []);
 
   return (
-    <span ref={ref} className={cn("font-mono tabular-nums", className)} aria-hidden>
+    <span ref={ref} className={cn("bg-transparent font-mono tabular-nums", className)} aria-hidden>
       00:00:00:00
     </span>
   );
 }
 
-/** Cinta infinita horizontal. Duplica el contenido para que el loop sea continuo. */
+/**
+ * Cinta infinita horizontal via CSS (no Motion transforms).
+ * Motion + ancestor opacity painted solid black bars on iOS Safari.
+ */
 export function Marquee({
   children,
   duration = 30,
@@ -72,17 +74,23 @@ export function Marquee({
   className?: string;
 }) {
   return (
-    <div className={cn("relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]", className)}>
-      <motion.div
-        className="flex shrink-0 items-center"
-        animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
-        transition={{ duration, ease: "linear", repeat: Infinity }}
+    <div
+      className={cn(
+        "relative flex overflow-hidden bg-transparent",
+        "[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
+        "[-webkit-mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
+        className,
+      )}
+    >
+      <div
+        className={cn("flex w-max shrink-0 items-center bg-transparent", reverse ? "animate-marquee-reverse" : "animate-marquee")}
+        style={{ animationDuration: `${duration}s` }}
       >
-        <div className="flex shrink-0 items-center">{children}</div>
-        <div className="flex shrink-0 items-center" aria-hidden>
+        <div className="flex shrink-0 items-center bg-transparent">{children}</div>
+        <div className="flex shrink-0 items-center bg-transparent" aria-hidden>
           {children}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
